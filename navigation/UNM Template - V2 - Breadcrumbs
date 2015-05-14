@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+    <!-- Skip a the specified number of levels at the beginning of the breadcrumbs -->
+    <xsl:param name="skipLevels">0</xsl:param>
+    <!-- id attribute of top-level ul (blank for none) -->
+    <xsl:param name="wrapperID">unm_breadcrumbs</xsl:param>
+    <!-- Name of page to consider default page in a folder (i.e. index, default) -->
+    <xsl:param name="defaultPage">index</xsl:param>
+    <!-- DO NOT modify below this point -->
+    <xsl:template match="/system-index-block">
+        <ul class="breadcrumb hidden-xs">
+            <xsl:if test="$wrapperID">
+                <xsl:attribute name="id">
+                    <xsl:value-of select="$wrapperID"/>
+                </xsl:attribute>
+            </xsl:if>
+            <li class="unm_home">
+                <a href="http://www.unm.edu">UNM</a>
+            </li>
+            <xsl:apply-templates select="system-page[path='/index' and not(@reference)]"/>
+            <xsl:apply-templates select="child::system-folder[descendant::system-page[@current = 'true' and not(@reference)]]"/>
+            <xsl:apply-templates select="//system-page[@current = 'true' and name!='index' and not(@reference)]"/>
+        </ul>
+    </xsl:template>
+    <xsl:template match="system-page">
+        <li>
+            <xsl:choose>
+                <xsl:when test="@current">
+                    <xsl:call-template name="get-asset-name"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <a>
+                        <xsl:attribute name="href">
+                            <xsl:value-of select="path"/>
+                        </xsl:attribute>
+                        <xsl:call-template name="get-asset-name"/>
+                    </a>
+                </xsl:otherwise>
+            </xsl:choose>
+        </li>
+    </xsl:template>
+    <xsl:template match="system-folder">
+        <xsl:choose>
+            <xsl:when test="count(child::system-page | child::system-folder) &gt; 0">
+                <li>
+                    <xsl:choose>
+                        <xsl:when test="system-page[name = $defaultPage and not(@current)]">
+                            <a>
+                                <xsl:attribute name="href">
+                                    <xsl:value-of select="system-page[name = $defaultPage and not(@reference)]/path"/>
+                                </xsl:attribute>
+                                <xsl:call-template name="get-asset-name"/>
+                            </a>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <a>
+                                <xsl:attribute name="href">
+                                    <xsl:value-of select="system-page[1]/path"/>
+                                </xsl:attribute>
+                                <xsl:call-template name="get-asset-name"/>
+                            </a>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </li>
+            </xsl:when>
+        </xsl:choose>
+        <xsl:apply-templates select="child::system-folder[descendant::system-page[@current = 'true' and not(@reference)]]"/>
+    </xsl:template>
+    <xsl:template name="get-asset-name">
+        <xsl:choose>
+            <xsl:when test="display-name">
+                <xsl:value-of select="display-name"/>
+            </xsl:when>
+            <xsl:when test="title">
+                <xsl:value-of select="title"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:value-of select="concat('[[',name,']]')"/>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+</xsl:stylesheet>
