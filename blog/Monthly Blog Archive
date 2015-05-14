@@ -1,0 +1,69 @@
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" exclude-result-prefixes="xalan" version="1.0" xmlns:xalan="http://xml.apache.org/xalan" xmlns:xd="http://www.oxygenxml.com/ns/doc/xsl">
+    <xsl:include href="site://_common/formats/include/format-date"/>
+    <xsl:param name="newscount">300</xsl:param>
+    <xsl:template match="/system-index-block">
+        <div class="span6" id="news">
+            <h2>Recent News</h2>
+            <xsl:apply-templates select="system-page[not(contains(path, '_internal'))][name != 'index']">
+                <xsl:sort order="descending" select="start-date"/>
+            </xsl:apply-templates>
+           
+        </div>
+    </xsl:template>
+    <xsl:template match="system-page">
+        <!-- list of all images in story -->
+        <xsl:variable name="images">
+            <images>
+                <xsl:apply-templates mode="array" select=".//img"/>
+            </images>
+        </xsl:variable>
+        <xsl:if test="position() &lt;= $newscount">
+            <article class="media">
+                <xsl:apply-templates mode="thumbnail" select="xalan:nodeset($images)/images/img[1]"/>
+                <div class="media-body">
+                    <p>
+                        <strong>
+                            <a href="{path}">
+                                <xsl:value-of select="display-name"/>
+                            </a>
+                        </strong>
+                        <br/>
+                        <xsl:call-template name="format-date">
+                            <xsl:with-param name="date" select="start-date"/>
+                            <xsl:with-param name="mask">longDate</xsl:with-param>
+                        </xsl:call-template>
+                        <br/>
+                        <xsl:copy-of select="teaser/node()"/>
+                    
+                    </p>
+                    <!--
+            <p><xsl:call-template name="RemoveHtmlTags"><xsl:with-param name="html" select="page-xhtml/node()"/></xsl:call-template></p>
+           -->
+                </div>
+            </article>
+        </xsl:if>
+    </xsl:template>
+    <xsl:template match="img" mode="array">
+        <xsl:copy-of select="."/>
+    </xsl:template>
+    <xsl:template match="img" mode="thumbnail">
+        <a class="pull-left" href="{../path}">
+            <img alt="{@alt}" class="media-object" src="{@src}" width="75"/>
+        </a>
+    </xsl:template>
+    <xsl:template name="RemoveHtmlTags">
+        <xsl:param name="html"/>
+        <xsl:choose>
+            <xsl:when test="contains($html, '&lt;')">
+                <xsl:value-of select="substring-before($html, '&lt;')"/>
+                <!-- Recurse through HTML -->
+                <xsl:call-template name="RemoveHtmlTags">
+                    <xsl:with-param name="html" select="substring-after($html, '&gt;')"/>
+                </xsl:call-template>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:value-of select="$html"/>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+</xsl:stylesheet>
