@@ -1,0 +1,29 @@
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0" xmlns:xd="http://www.oxygenxml.com/ns/doc/xsl">
+    <xsl:include href="site://_common/formats/include/format-date"/>
+    <xsl:param name="itemcount">5</xsl:param>
+    <xsl:template match="/system-index-block">
+    <div id="recent-posts">
+    <h2>Recent Posts</h2>
+    <ul class="list-unstyled">
+        <xsl:apply-templates select="system-page[not(contains(path, '_internal'))]">
+            <xsl:sort order="descending" select="start-date"/>
+        </xsl:apply-templates> 
+        </ul>
+    </div>
+    </xsl:template>
+    
+
+    <xsl:template match="system-page">
+      
+      <xsl:if test="position() &lt;= $itemcount">
+      <li><p>
+        <strong><a href="{path}"><xsl:value-of select="title"/></a></strong><br/>
+        <xsl:call-template name="format-date">
+            <xsl:with-param name="date" select="start-date"/>
+            <xsl:with-param name="mask">longDate</xsl:with-param>
+        </xsl:call-template></p>
+        </li>        
+     </xsl:if>
+    </xsl:template>
+    
+</xsl:stylesheet>
