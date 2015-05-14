@@ -1,0 +1,68 @@
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" exclude-result-prefixes="xalan" version="1.0" xmlns:xalan="http://xml.apache.org/xalan" xmlns:xd="http://www.oxygenxml.com/ns/doc/xsl">
+    <xsl:include href="site://_common/formats/include/format-date"/>
+    <xsl:include href="site://_common/v2/formats/snippet.xsl"/>
+    <xsl:template match="/system-index-block">
+        <xsl:apply-templates select="system-folder[count(system-page[name != 'index']) &gt; 0]">
+            <xsl:sort select="name"/>
+        </xsl:apply-templates>
+    </xsl:template>
+
+    <xsl:template match="system-folder">
+        <h2 class="blog-section">
+            <xsl:value-of select="display-name"/>
+        </h2>
+        <xsl:apply-templates select="system-page[name != 'index']">
+            <xsl:sort order="descending" select="start-date"/>
+        </xsl:apply-templates>
+
+    </xsl:template>
+
+    <xsl:template match="system-page">
+        <!-- list of all images in story -->
+        <xsl:variable name="images">
+            <images>
+                <xsl:apply-templates mode="array" select=".//img"/>
+            </images>
+        </xsl:variable>
+
+            <article class="media">
+             <h3>
+                            <a href="{path}">
+                                <xsl:value-of select="display-name"/>
+                            </a><br/><small>
+                        <xsl:call-template name="format-date">
+                            <xsl:with-param name="date" select="start-date"/>
+                            <xsl:with-param name="mask">longDate</xsl:with-param>
+                        </xsl:call-template>
+            </small>
+                        </h3>
+                        
+            
+            
+                <xsl:apply-templates mode="thumbnail" select="xalan:nodeset($images)/images/img[1]"/>
+                <div class="media-body">
+            <xsl:call-template name="copy-nodes">
+                <xsl:with-param name="nodes" select="page-xhtml/node()"/>
+                <xsl:with-param name="length" select="200"/>
+            </xsl:call-template>
+    
+                </div>
+                <hr/>
+            </article>
+
+    </xsl:template>
+    
+    
+    
+    
+    <xsl:template match="img" mode="array">
+        <xsl:copy-of select="."/>
+    </xsl:template>
+    <xsl:template match="img" mode="thumbnail">
+        <a class="pull-left" href="{../path}">
+            <img alt="{@alt}" class="media-object" src="{@src}" width="75"/>
+        </a>
+    </xsl:template>
+     
+    
+</xsl:stylesheet>
