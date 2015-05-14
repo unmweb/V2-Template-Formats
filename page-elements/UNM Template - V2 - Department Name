@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+    <xsl:template match="/system-data-structure">
+        <a href="{site-url}">
+            <h1>
+                <xsl:value-of select="site-name"/>
+            </h1>
+            <!-- <img alt="{site-name}" src="{logo/path}"/>-->
+        </a>
+    </xsl:template>
+</xsl:stylesheet>
