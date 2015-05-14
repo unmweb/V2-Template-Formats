@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+    <xsl:param name="defaultPage">index</xsl:param>
+    <xsl:template match="/system-index-block">
+            <div class="navbar navbar-top" id="horiz-nav">
+            <nav class="navbar-collapse collapse" id="horz-nav" role="navigation" tabindex="-1">
+                <ul class="nav navbar-nav" role="menubar">
+                    <!-- does pages, folder and links
+                <xsl:apply-templates select="system-folder[descendant::node()[dynamic-metadata[name='show-in-nav' and value='yes']]] | system-symlink | system-symlink[dynamic-metadata[name='show-in-nav' and value='yes']]"/>
+                 -->
+                    <xsl:apply-templates select=" system-symlink[dynamic-metadata[name='show-in-nav' and value='yes']] | system-page[dynamic-metadata[name='show-in-nav' and value='yes']] | system-folder[descendant::node()[dynamic-metadata[name='show-in-nav' and value='yes']]] | system-symlink"/>
+                </ul>
+            </nav>
+        </div>
+    </xsl:template>
+    <xsl:template match="system-page | system-symlink">
+        <li role="menuitem" tabindex="-1">
+            <a>
+                <xsl:attribute name="href">
+                    <xsl:choose>
+                        <xsl:when test="name(.) = 'system-page'">
+                            <xsl:value-of select="path"/>
+                        </xsl:when>
+                        <xsl:when test="name(.) = 'system-symlink'">
+                            <xsl:value-of select="link"/>
+                        </xsl:when>
+                    </xsl:choose>
+                </xsl:attribute>
+                <xsl:attribute name="title">
+                    <xsl:if test="parent::system-folder">
+                        <xsl:apply-templates mode="parent-folder" select="parent::system-folder"/>
+                    </xsl:if>
+                    <xsl:call-template name="get-asset-name"/>
+                </xsl:attribute>
+                <xsl:if test="@current and not(@reference) or descendant::node()[@current='true']">
+                    <xsl:attribute name="class">active</xsl:attribute>
+                </xsl:if>
+                <xsl:call-template name="get-asset-name"/>
+            </a>
+        </li>
+    </xsl:template>
+    <xsl:template match="system-folder">
+        <li role="menuitem" tabindex="-1">
+            <xsl:attribute name="class">
+                <xsl:choose>
+                    <xsl:when test="count(ancestor::*) = 1">dropdown</xsl:when>
+                    <xsl:when test="count(ancestor::*) &gt; 1 and count(descendant-or-self::system-page[not(@reference) and dynamic-metadata[name='show-in-nav' and value='yes']]) &gt; 1">dropdown-submenu</xsl:when>
+                    <xsl:otherwise/>
+                </xsl:choose>
+            </xsl:attribute>
+            <xsl:if test="count(descendant-or-self::system-page[dynamic-metadata[name='show-in-nav' and value='yes']]) &gt; 1">
+                    <xsl:attribute name="aria-haspopup">true</xsl:attribute>
+            </xsl:if>
+            <xsl:variable name="path">
+                <xsl:choose>
+                    <xsl:when test="system-page[name='index' and dynamic-metadata[name='show-in-nav' and value='yes']]">
+                        <xsl:value-of select="system-page[name='index']/path"/>
+                    </xsl:when>
+                    <xsl:when test="system-page[dynamic-metadata[name='show-in-nav' and value='yes']][1]">
+                        <xsl:value-of select="system-page[dynamic-metadata[name='show-in-nav' and value='yes']][1]/path"/>
+                    </xsl:when>
+                    <xsl:when test="system-page[name='index']">
+                        <xsl:value-of select="system-page[name='index']/path"/>
+                    </xsl:when>
+                    <xsl:otherwise> # </xsl:otherwise>
+                </xsl:choose>
+            </xsl:variable>
+            <a href="{$path}">
+                <xsl:if test="count(descendant-or-self::system-page[not(@reference) and dynamic-metadata[name='show-in-nav' and value='yes']]) &gt; 1">
+                    <xsl:attribute name="class">dropdown-toggle
+                        <xsl:if test="@current and not(@reference) or descendant::node()[@current='true']">
+                            active
+                        </xsl:if>                                
+                    </xsl:attribute>
+                    <xsl:attribute name="data-toggle">dropdown</xsl:attribute>            
+                </xsl:if>
+                <xsl:call-template name="get-asset-name"/>
+                <xsl:choose>
+                    <xsl:when test="count(ancestor::*) = 1 and count(descendant-or-self::system-page[not(@reference) and dynamic-metadata[name='show-in-nav' and value='yes']]) &gt; 1">
+                        <span class="caret">&#160;</span>
+                    </xsl:when>
+                    <xsl:otherwise/>
+                </xsl:choose>
+            </a>
+            <xsl:if test="count(system-page[dynamic-metadata[name='show-in-nav' and value='yes']] | system-folder[descendant-or-self::system-page[not(@reference) and dynamic-metadata[name='show-in-nav' and value='yes']]]                 | system-symlink[dynamic-metadata[name='show-in-nav' and value='yes']] |              system-folder[descendant-or-self::system-symlink[dynamic-metadata[name='show-in-nav' and value='yes']]]                                        ) &gt; 1">
+                <ul aria-hidden="true" class="dropdown-menu" role="menu">
+                    <xsl:apply-templates select="system-folder[descendant-or-self::system-page[not(@reference) and dynamic-metadata[name='show-in-nav' and value='yes']]]                         | system-page[dynamic-metadata[name='show-in-nav' and value='yes']]                          | system-symlink[dynamic-metadata[name='show-in-nav' and value='yes']]|              system-folder[descendant-or-self::system-symlink[dynamic-metadata[name='show-in-nav' and value='yes']]]  "/>
+                </ul>
+            </xsl:if>
+        </li>
+    </xsl:template>
+    <xsl:template match="system-folder" mode="parent-folder">
+        <xsl:call-template name="get-asset-name"/>
+        <xsl:text> - </xsl:text>
+    </xsl:template>
+    <xsl:template name="get-asset-name">
+        <xsl:choose>
+            <xsl:when test="display-name">
+                <xsl:value-of select="display-name"/>
+            </xsl:when>
+            <xsl:when test="title">
+                <xsl:value-of select="title"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:value-of select="name"/>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+</xsl:stylesheet>
