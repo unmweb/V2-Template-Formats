@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0" xmlns:xd="http://www.oxygenxml.com/ns/doc/xsl">
+    <xsl:template match="/system-index-block">
+        <div class="sidebar-nav-wrapper" id="blog-archives">
+            <h2>Blog Archives</h2>
+            <nav class="sidebar-nav" id="blog-archive">
+                <ul class="nav" id="expanding-archive-list">
+                    <xsl:apply-templates mode="getYears" select="system-folder">
+                        <xsl:sort data-type="text" order="descending"/>
+                    </xsl:apply-templates>
+                </ul>
+            </nav>
+            <p>
+                <a class="rss" href="site://{calling-page/system-page/site}/blog/rss">RSS Feed</a>
+            </p>
+        </div>
+    </xsl:template>
+    <xsl:template match="system-folder" mode="getYears">
+        <xsl:if test="system-folder[system-page[name!='index'] and system-page[name='index']]">
+            <li class="submenu">
+                <a class="collapsed">
+                    <xsl:attribute name="href">#<xsl:value-of select="name"/>-submenu</xsl:attribute>
+                    <xsl:attribute name="data-toggle">collapse</xsl:attribute>
+                    <xsl:value-of select="display-name"/>
+                </a>
+                <ul class="nav collapse" id="{name}-submenu">
+                    <xsl:apply-templates select="system-folder[system-page[name!='index'] and system-page[name='index']]">
+                        <xsl:sort data-type="text" order="ascending"/>
+                    </xsl:apply-templates>
+                </ul>
+            </li>
+        </xsl:if>
+    </xsl:template>
+    <xsl:template match="system-folder">
+        <li>
+            <a href="{system-page[name='index']/link}">
+                <xsl:value-of select="display-name"/>&#160;
+                <xsl:value-of select="../display-name"/>
+            </a>
+        </li>
+    </xsl:template>
+</xsl:stylesheet>
