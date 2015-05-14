@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+    <xsl:template match="/system-data-structure">
+        <xsl:if test="analytics-id != ''">
+        [system-view:internal] 
+        <xsl:comment>Google Analytics for <xsl:value-of select="analytics-id"/> disabled when pages viewed in Cascade </xsl:comment>
+        [/system-view:internal]
+        [system-view:external]
+            <script>
+            dataLayer = [{
+                'site-analytics': '<xsl:value-of select="analytics-id"/>'
+            }];                
+            </script>
+        [/system-view:external]    
+        </xsl:if>
+    </xsl:template>
+</xsl:stylesheet>
